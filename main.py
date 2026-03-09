@@ -293,7 +293,7 @@ class Agent:
         return random.choice(self.agents)
 
 # Fungsi untuk menjalankan scan.py pada file domain
-def run_seek_on_file(input_file, output_file, proxy=None, ports="80,443", timeout=6):
+def run_scan_on_file(input_file, output_file, proxy=None, ports="80,443", timeout=6):
     """Memproses file berisi daftar domain/IP dengan HostResponse"""
     if not os.path.isfile(input_file):
         cprint(f"[!] File tidak ditemukan: {input_file}", RED)
@@ -334,8 +334,8 @@ def main_menu():
     while True:
         banner()
         cprint("Pilih menu:", CYAN)
-        print("  1. Scan domain baru (subfinder → bugscanner → seek)")
-        print("  2. Scan dari file domain (langsung seek)")
+        print("  1. Scan domain baru (subfinder → bugscanner → scan)")
+        print("  2. Scan dari file domain (langsung scan)")
         print("  3. Keluar")
         choice = input("\nMasukkan pilihan [1/2/3]: ").strip()
         if choice == "1":
@@ -389,8 +389,8 @@ def main_menu():
                     import shutil
                     shutil.copy(sub_file, live_file)
 
-                # Langkah 3: seek
-                run_seek_on_file(live_file, output, proxy, ports, timeout)
+                # Langkah 3: scan
+                run_scan_on_file(live_file, output, proxy, ports, timeout)
             finally:
                 # Hapus file sementara
                 os.unlink(sub_file)
@@ -409,7 +409,7 @@ def main_menu():
                 timeout = int(timeout)
             except:
                 timeout = 6
-            run_seek_on_file(file_path, output, proxy, ports, timeout)
+            run_scan_on_file(file_path, output, proxy, ports, timeout)
 
         elif choice == "3":
             cprint("Terima kasih!", GREEN)
