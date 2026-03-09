@@ -8,7 +8,7 @@ Copy and paste the commands below to get started:
 
 ```bash
 # Clone the repository (if not already)
-git clone [https://github.com/kuhujiban1c/scanner)
+git clone https://github.com/kuhujiban1c/scanner
 cd scanner
 
 # Install dependencies
