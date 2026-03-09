@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Scanner CLI - Simple interactive tool for host scanning
-Refactored version with improved structure and error handling
-"""
-
 import os
 import sys
 import argparse
@@ -25,6 +19,11 @@ def cprint(msg: str, color: str = GREEN, end: str = "\n"):
     print(f"{color}{msg}{RESET}", end=end)
 
 
+def clear_screen():
+    """Clear terminal screen (cross-platform)."""
+    os.system("cls" if os.name == "nt" else "clear")
+
+
 def banner():
     """Display application banner."""
     cprint(r"""
@@ -35,9 +34,34 @@ def banner():
  ####  ##  ## ######     ######     ##  ###    #####
                                 #####
     """, CYAN)
-    cprint("       Scanner CLI - Host Discovery & Vulnerability Scanner", CYAN)
+    cprint("       Scanner CLI - Host Discovery & Vulnerability Scanner v1.1", CYAN)
     cprint("       Github: github.com/kuhujiban1c/scanner", CYAN)
+    cprint("       Raw output format: domain|status|server|ports|tls|", YELLOW)
     print()
+
+
+def show_help():
+    """Display help menu."""
+    clear_screen()
+    banner()
+    cprint("AVAILABLE COMMANDS:", CYAN)
+    print()
+    cprint("  1. Scan single domain", GREEN)
+    cprint("     Full pipeline: subfinder → bugscanner → scan", YELLOW)
+    print()
+    cprint("  2. Scan from file", GREEN)
+    cprint("     Direct scanning of domains/IPs from file", YELLOW)
+    print()
+    cprint("  3. Clear screen", GREEN)
+    cprint("     Clear terminal screen", YELLOW)
+    print()
+    cprint("  4. Help", GREEN)
+    cprint("     Display this help menu", YELLOW)
+    print()
+    cprint("  5. Exit", GREEN)
+    cprint("     Exit the application", YELLOW)
+    print()
+    input("Press Enter to return to menu...")
 
 
 def interactive_menu():
@@ -49,14 +73,20 @@ def interactive_menu():
         cprint("Select mode:", CYAN)
         print("  1. Scan single domain (subfinder → bugscanner → scan)")
         print("  2. Scan from file (direct scan)")
-        print("  3. Exit")
+        print("  3. Clear screen")
+        print("  4. Help")
+        print("  5. Exit")
         
-        choice = input("\nEnter choice [1/2/3]: ").strip()
+        choice = input("\nEnter choice [1/2/3/4/5]: ").strip()
         
         if choice == "1":
+            clear_screen()
+            banner()
+            
             domain = input("Enter target domain (example: example.com): ").strip()
             if not domain:
                 cprint("[!] Domain cannot be empty", RED)
+                input("\nPress Enter to continue...")
                 continue
             
             output = input("Output file name (default: hasil_<domain>.txt): ").strip()
@@ -70,6 +100,7 @@ def interactive_menu():
                 ports = [int(p.strip()) for p in ports_input.split(",")]
             except ValueError:
                 cprint("[!] Invalid port format", RED)
+                input("\nPress Enter to continue...")
                 continue
             
             timeout_input = input("Timeout in seconds (default: 6): ").strip() or "6"
@@ -82,6 +113,7 @@ def interactive_menu():
             if not orchestrator.check_dependency("subfinder"):
                 cprint("[!] subfinder not found. Please install it.", RED)
                 cprint("    https://github.com/projectdiscovery/subfinder", YELLOW)
+                input("\nPress Enter to continue...")
                 continue
             
             use_bugscanner = orchestrator.check_dependency("bugscanner-go")
@@ -95,16 +127,23 @@ def interactive_menu():
             orchestrator.timeout = timeout
             
             try:
+                print()
                 total = orchestrator.scan_domain(domain, output, proxy, ports)
-                cprint(f"\n[✓] Scan complete. {total} result(s) saved.", GREEN)
+                cprint(f"\n[✓] Scan complete. {total} result(s) saved to {output}", GREEN)
             except Exception as e:
                 cprint(f"[!] Error during scan: {e}", RED)
                 logger.exception("Scan error:")
+            
+            input("\nPress Enter to continue...")
         
         elif choice == "2":
+            clear_screen()
+            banner()
+            
             file_path = input("Enter file path with domains: ").strip()
             if not os.path.isfile(file_path):
                 cprint(f"[!] File not found: {file_path}", RED)
+                input("\nPress Enter to continue...")
                 continue
             
             output = input("Output file name (default: result.txt): ").strip() or "result.txt"
@@ -115,6 +154,7 @@ def interactive_menu():
                 ports = [int(p.strip()) for p in ports_input.split(",")]
             except ValueError:
                 cprint("[!] Invalid port format", RED)
+                input("\nPress Enter to continue...")
                 continue
             
             timeout_input = input("Timeout in seconds (default: 6): ").strip() or "6"
@@ -126,26 +166,41 @@ def interactive_menu():
             orchestrator.timeout = timeout
             
             try:
+                print()
                 total = orchestrator.scan_file(file_path, output, proxy, ports)
-                cprint(f"\n[✓] Scan complete. {total} result(s) saved.", GREEN)
+                cprint(f"\n[✓] Scan complete. {total} result(s) saved to {output}", GREEN)
             except Exception as e:
                 cprint(f"[!] Error during scan: {e}", RED)
                 logger.exception("Scan error:")
+            
+            input("\nPress Enter to continue...")
         
         elif choice == "3":
-            cprint("Thank you!", GREEN)
+            clear_screen()
+        
+        elif choice == "4":
+            show_help()
+        
+        elif choice == "5":
+            cprint("Thank you for using Scanner CLI!", GREEN)
             sys.exit(0)
         
         else:
             cprint("[!] Invalid choice", RED)
-        
-        input("\nPress Enter to continue...")
+            input("\nPress Enter to continue...")
 
 
 def cli_mode():
     """Command-line mode with arguments."""
     parser = argparse.ArgumentParser(
-        description="Scanner CLI - Host Discovery & Vulnerability Scanner"
+        description="Scanner CLI - Host Discovery & Vulnerability Scanner",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python3 main.py -d example.com -o results.txt
+  python3 main.py -f domains.txt -o results.txt --ports 80,443,8080
+  python3 main.py -d example.com --timeout 10 --no-bugscanner
+        """
     )
     parser.add_argument(
         "-d", "--domain",
@@ -235,6 +290,7 @@ def main():
     else:
         # Interactive mode
         try:
+            clear_screen()
             interactive_menu()
         except KeyboardInterrupt:
             cprint("\n[!] Cancelled by user", YELLOW)
