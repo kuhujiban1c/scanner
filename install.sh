@@ -3,33 +3,26 @@
 # Scanner Installation Script
 # Installs external dependencies: subfinder, bugscanner-go
 #
-
 set -e
-
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
-echo -e "${NC}"
 
 echo -e "${GREEN}======================================${NC}"
 echo -e "${GREEN}Scanner CLI Installation${NC}"
 echo -e "${GREEN}======================================${NC}\n"
-
 # Check if Python 3 is installed
 if ! command -v python3 &> /dev/null; then
     echo -e "${RED}[!] Python 3 is not installed${NC}"
     exit 1
 fi
-
-echo -e "${GREEN}[✓] Python 3 found$(NC)"
-
+echo -e "${GREEN}[✓] Python 3 found${NC}"
 # Install Python dependencies
 echo -e "\n${YELLOW}[*] Installing Python dependencies...${NC}"
-pip install -q -r requirements.txt
+pip install -q -r requirements.txt --break-system-packages
 echo -e "${GREEN}[✓] Python dependencies installed${NC}"
-
 # Install subfinder
 echo -e "\n${YELLOW}[*] Checking subfinder...${NC}"
 if command -v subfinder &> /dev/null; then
@@ -67,7 +60,6 @@ else
     
     echo -e "${GREEN}[✓] subfinder installed${NC}"
 fi
-
 # Install bugscanner-go (optional)
 echo -e "\n${YELLOW}[*] Checking bugscanner-go...${NC}"
 if command -v bugscanner-go &> /dev/null; then
@@ -76,7 +68,6 @@ else
     echo -e "${YELLOW}[*] bugscanner-go is optional${NC}"
     echo -e "${YELLOW}Install manually if needed: https://github.com/projectdiscovery/naabu${NC}"
 fi
-
 echo -e "\n${GREEN}======================================${NC}"
 echo -e "${GREEN}[✓] Installation complete!${NC}"
 echo -e "${GREEN}======================================${NC}"
