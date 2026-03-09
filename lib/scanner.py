@@ -243,15 +243,18 @@ class HostResponse:
 
         return f"{domain}|{status}|{server}|{open_ports_str}|{tls_version}|"
 
-    # ── Save results (thread-safe) ─────────────────────────────────
+    # ── Save results (thread-safe) - RAW OUTPUT ONLY ───────────────
     def _save_results(self, results: List[str]) -> None:
-        """Append results to file in the same minimal format."""
+        """
+        Append results to file in raw format (NO HEADERS).
+        Output format: domain|status|server|ports|tls_version|
+        """
         if not results:
             return
         with _file_lock:
             try:
                 with open(self.result_file, "a", encoding="utf-8") as f:
-                    f.write(f"# Scan: {self.target} — {datetime.now().isoformat()}\n")
+                    # ✅ ONLY WRITE RAW DATA - NO HEADER
                     for line in sorted(results):
                         f.write(line + "\n")
                 logger.info(f"{len(results)} result(s) saved to {self.result_file}")
